@@ -80,7 +80,7 @@ commands:
       component: dev
       commandLine: |
         mkdir -p /home/user/.continue && \
-        export MISTRAL_LARGE_MODEL_NAME="${MISTRAL_LARGE_MODEL_NAME}" && \
+        export MISTRAL_LARGE_MODEL_NAME="$git {MISTRAL_LARGE_MODEL_NAME}" && \
         export MISTRAL_LARGE_ENDPOINT="${MISTRAL_LARGE_ENDPOINT}" && \
         export DEVSTRAL_MODEL_NAME="${DEVSTRAL_MODEL_NAME}" && \
         export DEVSTRAL_ENDPOINT="${DEVSTRAL_ENDPOINT}" && \
@@ -117,6 +117,6 @@ commands:
 events:
   postStart:
     - install-continue
-    - install-vibe
-    - configure-vibe
     - configure-continue
+    # - install-vibe
+    # - configure-vibe
