@@ -1,0 +1,90 @@
+schemaVersion: 2.3.0
+metadata:
+  name: devstral-dev-environment
+  version: 1.0.0
+  description: >
+    Cloud development environment with Continue AI assistant and Mistral Vibe CLI,
+    connected to a self-hosted Devstral-Small-2-24B model on RHOAI.
+attributes:
+  controller.devfile.io/storage-type: ephemeral
+
+components:
+  - name: dev
+    container:
+      image: quay.io/devfile/universal-developer-image:ubi8-latest
+      memoryLimit: 8Gi
+      memoryRequest: 4Gi
+      cpuLimit: 4000m
+      cpuRequest: 1000m
+      mountSources: true
+      sourceMapping: /projects
+      # DEVSTRAL_ENDPOINT, DEVSTRAL_MODEL_NAME, and DEVSTRAL_API_KEY
+      # are injected automatically from the 'devstral-endpoint-config'
+      # secret in the openshift-devspaces namespace.
+
+commands:
+  - id: install-vibe
+    exec:
+      component: dev
+      commandLine: |
+        pip install --user mistral-vibe && \
+        echo "Mistral Vibe CLI installed successfully"
+
+  - id: configure-vibe
+    exec:
+      component: dev
+      commandLine: |
+        mkdir -p ~/.vibe && \
+        cat > ~/.vibe/config.toml << 'VIBEEOF'
+        [[providers]]
+        name = "rhoai"
+        api_base = "${DEVSTRAL_ENDPOINT}"
+        api_key_env_var = "DEVSTRAL_API_KEY"
+        api_style = "openai"
+        backend = "generic"
+
+        [[models]]
+        name = "${DEVSTRAL_MODEL_NAME}"
+        provider = "rhoai"
+        alias = "devstral-rhoai"
+        temperature = 0.1
+
+        active_model = "devstral-rhoai"
+        enable_auto_update = false
+        VIBEEOF
+        echo "Mistral Vibe configured for RHOAI endpoint"
+
+  - id: configure-continue
+    exec:
+      component: dev
+      commandLine: |
+        mkdir -p ~/.continue && \
+        cat > ~/.continue/config.json << 'CONTINUEEOF'
+        {
+          "models": [
+            {
+              "title": "Devstral Small 2 (RHOAI)",
+              "provider": "openai",
+              "model": "${DEVSTRAL_MODEL_NAME}",
+              "apiBase": "${DEVSTRAL_ENDPOINT}",
+              "apiKey": "${DEVSTRAL_API_KEY}"
+            }
+          ],
+          "tabAutocompleteModel": {
+            "title": "Devstral Autocomplete",
+            "provider": "openai",
+            "model": "${DEVSTRAL_MODEL_NAME}",
+            "apiBase": "${DEVSTRAL_ENDPOINT}",
+            "apiKey": "${DEVSTRAL_API_KEY}"
+          },
+          "allowAnonymousTelemetry": false
+        }
+        CONTINUEEOF
+        echo "Continue extension configured for RHOAI endpoint"
+
+events:
+  postStart:
+    - install-vibe
+    - configure-vibe
+    - configure-continue
+

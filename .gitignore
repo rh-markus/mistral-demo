@@ -1,0 +1,4 @@
+# Secrets - never commit credentials
+devstral-endpoint-secret.yaml
+*-secret.yaml
+*.secret.yaml
