@@ -24,13 +24,6 @@ components:
       # secret in the openshift-operators namespace.
 
 commands:
-  - id: install-continue
-    exec:
-      component: dev
-      commandLine: |
-        code --install-extension Continue.continue --force && \
-        echo "Continue extension installed successfully"
-
   - id: install-vibe
     exec:
       component: dev
@@ -79,44 +72,42 @@ commands:
     exec:
       component: dev
       commandLine: |
+        sleep 5 && \
         mkdir -p /home/user/.continue && \
-        export MISTRAL_LARGE_MODEL_NAME="$git {MISTRAL_LARGE_MODEL_NAME}" && \
-        export MISTRAL_LARGE_ENDPOINT="${MISTRAL_LARGE_ENDPOINT}" && \
-        export DEVSTRAL_MODEL_NAME="${DEVSTRAL_MODEL_NAME}" && \
-        export DEVSTRAL_ENDPOINT="${DEVSTRAL_ENDPOINT}" && \
-        export DEVSTRAL_API_KEY="${DEVSTRAL_API_KEY}" && \
-        envsubst << 'TEMPLATE' > /home/user/.continue/config.yaml
-        name: Local Config
-        version: 1.0.0
-        schema: v1
-
-        models:
-          - name: Mistral Large (BU Cluster)
-            provider: openai
-            model: ${MISTRAL_LARGE_MODEL_NAME}
-            apiBase: ${MISTRAL_LARGE_ENDPOINT}
-            apiKey: none
-
-          - name: Devstral Small (ROSA cluster)
-            provider: openai
-            model: ${DEVSTRAL_MODEL_NAME}
-            apiBase: ${DEVSTRAL_ENDPOINT}
-            apiKey: ${DEVSTRAL_API_KEY}
-
-        context:
-          - provider: code
-          - provider: docs
-          - provider: diff
-          - provider: terminal
-          - provider: problems
-          - provider: folder
-          - provider: codebase
-        TEMPLATE
-        echo "Continue extension configured for RHOAI endpoints"
+        cat > /home/user/.continue/config.json << CONTINUEEOF
+        {
+          "models": [
+            {
+              "title": "Mistral Large (BU Cluster)",
+              "provider": "openai",
+              "model": "${MISTRAL_LARGE_MODEL_NAME}",
+              "apiBase": "${MISTRAL_LARGE_ENDPOINT}",
+              "apiKey": "none"
+            },
+            {
+              "title": "Devstral Small (ROSA cluster)",
+              "provider": "openai",
+              "model": "${DEVSTRAL_MODEL_NAME}",
+              "apiBase": "${DEVSTRAL_ENDPOINT}",
+              "apiKey": "${DEVSTRAL_API_KEY}"
+            }
+          ],
+          "contextProviders": [
+            { "name": "code" },
+            { "name": "docs" },
+            { "name": "diff" },
+            { "name": "terminal" },
+            { "name": "problems" },
+            { "name": "folder" },
+            { "name": "codebase" }
+          ],
+          "allowAnonymousTelemetry": false
+        }
+        CONTINUEEOF
+        echo "Continue config.json written for RHOAI endpoints"
 
 events:
   postStart:
-    - install-continue
+    - install-vibe
+    - configure-vibe
     - configure-continue
-    # - install-vibe
-    # - configure-vibe
