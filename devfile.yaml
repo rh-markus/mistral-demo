@@ -21,9 +21,16 @@ components:
       # DEVSTRAL_ENDPOINT, DEVSTRAL_MODEL_NAME, DEVSTRAL_API_KEY,
       # MISTRAL_LARGE_ENDPOINT, MISTRAL_LARGE_MODEL_NAME, MISTRAL_LARGE_API_KEY
       # are injected automatically from the 'devstral-endpoint-config'
-      # secret in the devspaces namespace.
+      # secret in the openshift-operators namespace.
 
 commands:
+  - id: install-continue
+    exec:
+      component: dev
+      commandLine: |
+        code --install-extension Continue.continue --force && \
+        echo "Continue extension installed successfully"
+
   - id: install-vibe
     exec:
       component: dev
@@ -35,8 +42,8 @@ commands:
     exec:
       component: dev
       commandLine: |
-        mkdir -p ~/.vibe && \
-        cat > ~/.vibe/config.toml << VIBEEOF
+        mkdir -p /home/user/.vibe && \
+        cat > /home/user/.vibe/config.toml << VIBEEOF
         [[providers]]
         name = "rhoai-devstral"
         api_base = "${DEVSTRAL_ENDPOINT}"
@@ -72,8 +79,13 @@ commands:
     exec:
       component: dev
       commandLine: |
-        mkdir -p ~/.continue && \
-        cat > ~/.continue/config.yaml << CONTINUEEOF
+        mkdir -p /home/user/.continue && \
+        export MISTRAL_LARGE_MODEL_NAME="${MISTRAL_LARGE_MODEL_NAME}" && \
+        export MISTRAL_LARGE_ENDPOINT="${MISTRAL_LARGE_ENDPOINT}" && \
+        export DEVSTRAL_MODEL_NAME="${DEVSTRAL_MODEL_NAME}" && \
+        export DEVSTRAL_ENDPOINT="${DEVSTRAL_ENDPOINT}" && \
+        export DEVSTRAL_API_KEY="${DEVSTRAL_API_KEY}" && \
+        envsubst << 'TEMPLATE' > /home/user/.continue/config.yaml
         name: Local Config
         version: 1.0.0
         schema: v1
@@ -99,11 +111,12 @@ commands:
           - provider: problems
           - provider: folder
           - provider: codebase
-        CONTINUEEOF
+        TEMPLATE
         echo "Continue extension configured for RHOAI endpoints"
 
 events:
   postStart:
+    - install-continue
     - install-vibe
     - configure-vibe
     - configure-continue
