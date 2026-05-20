@@ -4,23 +4,24 @@ metadata:
   version: 1.0.0
   description: >
     Cloud development environment with Continue AI assistant and Mistral Vibe CLI,
-    connected to a self-hosted Devstral-Small-2-24B model on RHOAI.
+    connected to self-hosted Devstral-Small-2-24B and Mistral Large 2407 FP8 models on RHOAI.
 attributes:
   controller.devfile.io/storage-type: ephemeral
 
 components:
   - name: dev
     container:
-      image: quay.io/devfile/universal-developer-image:ubi8-latest
+      image: quay.io/devfile/universal-developer-image:ubi9-latest
       memoryLimit: 8Gi
       memoryRequest: 4Gi
       cpuLimit: 4000m
       cpuRequest: 1000m
       mountSources: true
       sourceMapping: /projects
-      # DEVSTRAL_ENDPOINT, DEVSTRAL_MODEL_NAME, and DEVSTRAL_API_KEY
+      # DEVSTRAL_ENDPOINT, DEVSTRAL_MODEL_NAME, DEVSTRAL_API_KEY,
+      # MISTRAL_LARGE_ENDPOINT, MISTRAL_LARGE_MODEL_NAME, MISTRAL_LARGE_API_KEY
       # are injected automatically from the 'devstral-endpoint-config'
-      # secret in the openshift-devspaces namespace.
+      # secret in the devspaces namespace.
 
 commands:
   - id: install-vibe
@@ -35,56 +36,74 @@ commands:
       component: dev
       commandLine: |
         mkdir -p ~/.vibe && \
-        cat > ~/.vibe/config.toml << 'VIBEEOF'
+        cat > ~/.vibe/config.toml << VIBEEOF
         [[providers]]
-        name = "rhoai"
+        name = "rhoai-devstral"
         api_base = "${DEVSTRAL_ENDPOINT}"
         api_key_env_var = "DEVSTRAL_API_KEY"
         api_style = "openai"
         backend = "generic"
 
+        [[providers]]
+        name = "rhoai-mistral-large"
+        api_base = "${MISTRAL_LARGE_ENDPOINT}"
+        api_key_env_var = "MISTRAL_LARGE_API_KEY"
+        api_style = "openai"
+        backend = "generic"
+
         [[models]]
         name = "${DEVSTRAL_MODEL_NAME}"
-        provider = "rhoai"
+        provider = "rhoai-devstral"
         alias = "devstral-rhoai"
+        temperature = 0.1
+
+        [[models]]
+        name = "${MISTRAL_LARGE_MODEL_NAME}"
+        provider = "rhoai-mistral-large"
+        alias = "mistral-large-rhoai"
         temperature = 0.1
 
         active_model = "devstral-rhoai"
         enable_auto_update = false
         VIBEEOF
-        echo "Mistral Vibe configured for RHOAI endpoint"
+        echo "Mistral Vibe configured for RHOAI endpoints"
 
   - id: configure-continue
     exec:
       component: dev
       commandLine: |
         mkdir -p ~/.continue && \
-        cat > ~/.continue/config.json << 'CONTINUEEOF'
-        {
-          "models": [
-            {
-              "title": "Devstral Small 2 (RHOAI)",
-              "provider": "openai",
-              "model": "${DEVSTRAL_MODEL_NAME}",
-              "apiBase": "${DEVSTRAL_ENDPOINT}",
-              "apiKey": "${DEVSTRAL_API_KEY}"
-            }
-          ],
-          "tabAutocompleteModel": {
-            "title": "Devstral Autocomplete",
-            "provider": "openai",
-            "model": "${DEVSTRAL_MODEL_NAME}",
-            "apiBase": "${DEVSTRAL_ENDPOINT}",
-            "apiKey": "${DEVSTRAL_API_KEY}"
-          },
-          "allowAnonymousTelemetry": false
-        }
+        cat > ~/.continue/config.yaml << CONTINUEEOF
+        name: Local Config
+        version: 1.0.0
+        schema: v1
+
+        models:
+          - name: Mistral Large (BU Cluster)
+            provider: openai
+            model: ${MISTRAL_LARGE_MODEL_NAME}
+            apiBase: ${MISTRAL_LARGE_ENDPOINT}
+            apiKey: none
+
+          - name: Devstral Small (ROSA cluster)
+            provider: openai
+            model: ${DEVSTRAL_MODEL_NAME}
+            apiBase: ${DEVSTRAL_ENDPOINT}
+            apiKey: ${DEVSTRAL_API_KEY}
+
+        context:
+          - provider: code
+          - provider: docs
+          - provider: diff
+          - provider: terminal
+          - provider: problems
+          - provider: folder
+          - provider: codebase
         CONTINUEEOF
-        echo "Continue extension configured for RHOAI endpoint"
+        echo "Continue extension configured for RHOAI endpoints"
 
 events:
   postStart:
     - install-vibe
     - configure-vibe
     - configure-continue
-
