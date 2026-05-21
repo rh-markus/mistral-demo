@@ -44,23 +44,10 @@ commands:
         api_style = "openai"
         backend = "generic"
 
-        [[providers]]
-        name = "rhoai-mistral-large"
-        api_base = "${MISTRAL_LARGE_ENDPOINT}"
-        api_key_env_var = "MISTRAL_LARGE_API_KEY"
-        api_style = "openai"
-        backend = "generic"
-
         [[models]]
         name = "${DEVSTRAL_MODEL_NAME}"
         provider = "rhoai-devstral"
         alias = "devstral-rhoai"
-        temperature = 0.1
-
-        [[models]]
-        name = "${MISTRAL_LARGE_MODEL_NAME}"
-        provider = "rhoai-mistral-large"
-        alias = "mistral-large-rhoai"
         temperature = 0.1
 
         active_model = "devstral-rhoai"
@@ -103,5 +90,7 @@ commands:
 
 events:
   postStart:
+    - install-vibe
     - configure-continue
+    - configure-vibe
 
