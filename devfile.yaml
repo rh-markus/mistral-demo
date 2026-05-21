@@ -18,6 +18,9 @@ components:
       cpuRequest: 1000m
       mountSources: true
       sourceMapping: /projects
+      env:
+        - name: VIBE_HOME
+          value: /home/user/.vibe
       # DEVSTRAL_ENDPOINT, DEVSTRAL_MODEL_NAME, DEVSTRAL_API_KEY,
       # MISTRAL_LARGE_ENDPOINT, MISTRAL_LARGE_MODEL_NAME, MISTRAL_LARGE_API_KEY
       # are injected automatically from the 'devstral-endpoint-config'
