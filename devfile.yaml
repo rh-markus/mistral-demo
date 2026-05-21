@@ -80,16 +80,6 @@ commands:
         schema: v1
 
         models:
-          - name: Mistral Large (BU Cluster)
-            provider: openai
-            model: ${MISTRAL_LARGE_MODEL_NAME}
-            apiBase: ${MISTRAL_LARGE_ENDPOINT}
-            apiKey: none
-            roles:
-              - chat
-              - edit
-              - apply
-
           - name: Devstral Small (ROSA cluster)
             provider: openai
             model: ${DEVSTRAL_MODEL_NAME}
