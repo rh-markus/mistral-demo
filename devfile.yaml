@@ -11,7 +11,7 @@ attributes:
 components:
   - name: dev
     container:
-      image: quay.io/devfile/universal-developer-image:ubi9-latest
+      image: quay.io/devfile/universal-developer-image:ubi10-latest
       memoryLimit: 8Gi
       memoryRequest: 4Gi
       cpuLimit: 4000m
