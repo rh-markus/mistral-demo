@@ -39,7 +39,7 @@ commands:
       component: dev
       commandLine: >
         mkdir -p /home/user/.vibe &&
-        printf 'active_model = "devstral-rhoai"\nenable_auto_update = false\n\n[[providers]]\nname = "rhoai-devstral"\napi_base = "%s"\napi_key_env_var = "DEVSTRAL_API_KEY"\napi_style = "openai"\nbackend = "generic"\n\n[[models]]\nname = "%s"\nprovider = "rhoai-devstral"\nalias = "devstral-rhoai"\ntemperature = 0.1\n' "$DEVSTRAL_ENDPOINT" "$DEVSTRAL_MODEL_NAME" > /home/user/.vibe/config.toml &&
+        printf 'active_model = "devstral-rhoai"\nenable_auto_update = false\n\n[[providers]]\nname = "rhoai-devstral"\napi_base = "%s"\napi_key_env_var = "DEVSTRAL_API_KEY"\napi_style = "openai"\n\n[[models]]\nname = "%s"\nprovider = "rhoai-devstral"\nalias = "devstral-rhoai"\ntemperature = 0.1\nsupports_tools = true\n' "$DEVSTRAL_ENDPOINT" "$DEVSTRAL_MODEL_NAME" > /home/user/.vibe/config.toml &&
         printf 'DEVSTRAL_API_KEY=%s\n' "$DEVSTRAL_API_KEY" > /home/user/.vibe/.env &&
         echo "Mistral Vibe configured for RHOAI endpoints"
 
