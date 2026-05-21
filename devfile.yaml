@@ -90,7 +90,7 @@ commands:
 
 events:
   postStart:
-    - install-vibe
     - configure-continue
-    - configure-vibe
+    - install-vibe
+    # - configure-vibe
 
