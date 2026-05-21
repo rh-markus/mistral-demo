@@ -39,9 +39,9 @@ commands:
       component: dev
       commandLine: >
         mkdir -p /home/user/.vibe &&
-        printf 'active_model = "devstral-rhoai"\nenable_auto_update = false\n\n[[providers]]\nname = "rhoai-devstral"\napi_base = "%s"\napi_key_env_var = "DEVSTRAL_API_KEY"\napi_style = "openai"\n\n[[models]]\nname = "%s"\nprovider = "rhoai-devstral"\nalias = "devstral-rhoai"\ntemperature = 0.1\nsupports_tools = true\n' "$DEVSTRAL_ENDPOINT" "$DEVSTRAL_MODEL_NAME" > /home/user/.vibe/config.toml &&
+        printf 'active_model = "devstral-rhoai"\nenable_auto_update = false\n\n[[providers]]\nname = "rhoai-devstral"\napi_base = "%s"\napi_key_env_var = "DEVSTRAL_API_KEY"\napi_style = "openai"\n\n[[providers]]\nname = "rhoai-mistral-large"\napi_base = "%s"\napi_style = "openai"\n\n[[providers]]\nname = "rhoai-nemotron-super"\napi_base = "%s"\napi_style = "openai"\n\n[[providers]]\nname = "rhoai-nemotron-nano"\napi_base = "%s"\napi_style = "openai"\n\n[[models]]\nname = "%s"\nprovider = "rhoai-devstral"\nalias = "devstral-rhoai"\ntemperature = 0.1\nsupports_tools = true\n\n[[models]]\nname = "%s"\nprovider = "rhoai-mistral-large"\nalias = "mistral-large"\ntemperature = 0.1\nsupports_tools = true\n\n[[models]]\nname = "%s"\nprovider = "rhoai-nemotron-super"\nalias = "nemotron-super"\ntemperature = 0.1\nsupports_tools = true\n\n[[models]]\nname = "%s"\nprovider = "rhoai-nemotron-nano"\nalias = "nemotron-nano"\ntemperature = 0.1\nsupports_tools = true\n' "$DEVSTRAL_ENDPOINT" "$MISTRAL_LARGE_ENDPOINT" "$NEMOTRON_SUPER_ENDPOINT" "$NEMOTRON_NANO_ENDPOINT" "$DEVSTRAL_MODEL_NAME" "$MISTRAL_LARGE_MODEL_NAME" "$NEMOTRON_SUPER_MODEL_NAME" "$NEMOTRON_NANO_MODEL_NAME" > /home/user/.vibe/config.toml &&
         printf 'DEVSTRAL_API_KEY=%s\n' "$DEVSTRAL_API_KEY" > /home/user/.vibe/.env &&
-        echo "Mistral Vibe configured for RHOAI endpoints"
+        echo "Mistral Vibe configured for all RHOAI endpoints"
 
   - id: configure-continue
     exec:
@@ -49,8 +49,8 @@ commands:
       commandLine: >
         mkdir -p /home/user/.continue &&
         rm -f /home/user/.continue/config.json &&
-        printf 'name: Local Config\nversion: 1.0.0\nschema: v1\n\nmodels:\n  - name: Devstral Small (ROSA cluster)\n    provider: openai\n    model: %s\n    apiBase: %s\n    apiKey: %s\n    roles:\n      - chat\n      - edit\n      - apply\n\ncontext:\n  - provider: code\n  - provider: docs\n  - provider: diff\n  - provider: terminal\n  - provider: problems\n  - provider: folder\n  - provider: codebase\n' "$DEVSTRAL_MODEL_NAME" "$DEVSTRAL_ENDPOINT" "$DEVSTRAL_API_KEY" > /home/user/.continue/config.yaml &&
-        echo "Continue config.yaml written for RHOAI endpoints"
+        printf 'name: Local Config\nversion: 1.0.0\nschema: v1\n\nmodels:\n  - name: Devstral Small 24B (Tesco ROSA)\n    provider: openai\n    model: %s\n    apiBase: %s\n    apiKey: %s\n    roles:\n      - chat\n      - edit\n      - apply\n  - name: Mistral Large 2407 FP8 (123B)\n    provider: openai\n    model: %s\n    apiBase: %s\n    roles:\n      - chat\n  - name: Nemotron 3 Super (120B)\n    provider: openai\n    model: %s\n    apiBase: %s\n    roles:\n      - chat\n      - edit\n  - name: Nemotron 3 Nano (30B)\n    provider: openai\n    model: %s\n    apiBase: %s\n    roles:\n      - chat\n      - apply\n\ncontext:\n  - provider: code\n  - provider: docs\n  - provider: diff\n  - provider: terminal\n  - provider: problems\n  - provider: folder\n  - provider: codebase\n' "$DEVSTRAL_MODEL_NAME" "$DEVSTRAL_ENDPOINT" "$DEVSTRAL_API_KEY" "$MISTRAL_LARGE_MODEL_NAME" "$MISTRAL_LARGE_ENDPOINT" "$NEMOTRON_SUPER_MODEL_NAME" "$NEMOTRON_SUPER_ENDPOINT" "$NEMOTRON_NANO_MODEL_NAME" "$NEMOTRON_NANO_ENDPOINT" > /home/user/.continue/config.yaml &&
+        echo "Continue config.yaml written for all RHOAI endpoints"
 
 events:
   postStart:
