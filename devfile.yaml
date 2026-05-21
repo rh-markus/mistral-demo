@@ -34,63 +34,23 @@ commands:
   - id: configure-vibe
     exec:
       component: dev
-      commandLine: |
-        mkdir -p /home/user/.vibe && \
-        cat > /home/user/.vibe/config.toml << VIBEEOF
-        [[providers]]
-        name = "rhoai-devstral"
-        api_base = "${DEVSTRAL_ENDPOINT}"
-        api_key_env_var = "DEVSTRAL_API_KEY"
-        api_style = "openai"
-        backend = "generic"
-
-        [[models]]
-        name = "${DEVSTRAL_MODEL_NAME}"
-        provider = "rhoai-devstral"
-        alias = "devstral-rhoai"
-        temperature = 0.1
-
-        active_model = "devstral-rhoai"
-        enable_auto_update = false
-        VIBEEOF
+      commandLine: >
+        mkdir -p /home/user/.vibe &&
+        printf '[[providers]]\nname = "rhoai-devstral"\napi_base = "%s"\napi_key_env_var = "DEVSTRAL_API_KEY"\napi_style = "openai"\nbackend = "generic"\n\n[[models]]\nname = "%s"\nprovider = "rhoai-devstral"\nalias = "devstral-rhoai"\ntemperature = 0.1\n\nactive_model = "devstral-rhoai"\nenable_auto_update = false\n' "$DEVSTRAL_ENDPOINT" "$DEVSTRAL_MODEL_NAME" > /home/user/.vibe/config.toml &&
         echo "Mistral Vibe configured for RHOAI endpoints"
 
   - id: configure-continue
     exec:
       component: dev
-      commandLine: |
-        mkdir -p /home/user/.continue && \
-        rm -f /home/user/.continue/config.json && \
-        cat > /home/user/.continue/config.yaml << CONTINUEEOF
-        name: Local Config
-        version: 1.0.0
-        schema: v1
-
-        models:
-          - name: Devstral Small (ROSA cluster)
-            provider: openai
-            model: ${DEVSTRAL_MODEL_NAME}
-            apiBase: ${DEVSTRAL_ENDPOINT}
-            apiKey: ${DEVSTRAL_API_KEY}
-            roles:
-              - chat
-              - edit
-              - apply
-
-        context:
-          - provider: code
-          - provider: docs
-          - provider: diff
-          - provider: terminal
-          - provider: problems
-          - provider: folder
-          - provider: codebase
-        CONTINUEEOF
+      commandLine: >
+        mkdir -p /home/user/.continue &&
+        rm -f /home/user/.continue/config.json &&
+        printf 'name: Local Config\nversion: 1.0.0\nschema: v1\n\nmodels:\n  - name: Devstral Small (ROSA cluster)\n    provider: openai\n    model: %s\n    apiBase: %s\n    apiKey: %s\n    roles:\n      - chat\n      - edit\n      - apply\n\ncontext:\n  - provider: code\n  - provider: docs\n  - provider: diff\n  - provider: terminal\n  - provider: problems\n  - provider: folder\n  - provider: codebase\n' "$DEVSTRAL_MODEL_NAME" "$DEVSTRAL_ENDPOINT" "$DEVSTRAL_API_KEY" > /home/user/.continue/config.yaml &&
         echo "Continue config.yaml written for RHOAI endpoints"
 
 events:
   postStart:
-    - configure-continue
     - install-vibe
-    # - configure-vibe
+    - configure-vibe
+    - configure-continue
 
